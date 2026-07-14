@@ -1,0 +1,96 @@
+/* ============================================================================
+   Accesibilidad global (ver src/context/AccessibilityContext.tsx)
+   Estas clases se activan/desactivan en <html> desde el widget flotante de
+   accesibilidad, disponible en toda la app. No modifican el layout normal:
+   solo lo hacen más legible/cómodo cuando la persona lo activa.
+   ============================================================================ */
+
+/* ── Tamaño de texto ─────────────────────────────────────────────────────── */
+html.a11y-texto-grande {
+  font-size: 112.5%; /* ~18px base en vez de 16px */
+}
+html.a11y-texto-muy-grande {
+  font-size: 125%; /* ~20px base */
+}
+
+/* ── Alto contraste ───────────────────────────────────────────────────────── */
+html.a11y-contraste-alto {
+  filter: contrast(1.15);
+}
+html.a11y-contraste-alto body {
+  background: #ffffff !important;
+}
+html.a11y-contraste-alto *:not(svg):not(path) {
+  text-shadow: none !important;
+}
+html.a11y-contraste-alto a,
+html.a11y-contraste-alto button {
+  outline-offset: 2px;
+}
+html.a11y-contraste-alto *:focus-visible {
+  outline: 3px solid #0033cc !important;
+  outline-offset: 2px !important;
+}
+
+/* ── Reducir movimiento (además respeta prefers-reduced-motion del SO) ──── */
+html.a11y-reducir-movimiento *,
+html.a11y-reducir-movimiento *::before,
+html.a11y-reducir-movimiento *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* ── Fuente amigable para dislexia (más espaciado, sin cursivas) ────────── */
+html.a11y-fuente-dislexia body,
+html.a11y-fuente-dislexia input,
+html.a11y-fuente-dislexia textarea,
+html.a11y-fuente-dislexia select {
+  letter-spacing: 0.04em;
+  word-spacing: 0.12em;
+  line-height: 1.7 !important;
+}
+html.a11y-fuente-dislexia em,
+html.a11y-fuente-dislexia i {
+  font-style: normal;
+  text-decoration: underline dotted;
+}
+
+/* ── Foco visible consistente en toda la app (ayuda a navegación por teclado) */
+:focus-visible {
+  outline: 2px solid #0059ff;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ── Utilidad: contenido solo para lectores de pantalla ──────────────────── */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── Enlace "Saltar al contenido principal" (solo visible con teclado) ───── */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  background: #0059ff;
+  color: #ffffff;
+  padding: 10px 16px;
+  border-radius: 0 0 8px 0;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.skip-link:focus {
+  left: 0;
+}
