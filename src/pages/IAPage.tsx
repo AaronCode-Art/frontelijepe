@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { motion } from "motion/react";
 import { useApp } from "@/context/AppContext";
 import type { CareerResult } from "@/types";
 import { iaDeepQuestions } from "@/data/testQuestions";
@@ -10,6 +11,9 @@ import {
   CheckCircle2, Star, TrendingUp, Building2, DollarSign, BookOpen,
   Shield, User, MessageCircle, Zap, Globe, Award, SkipForward, Users, WifiOff,
 } from "lucide-react";
+
+const stagger = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.05 } } };
+const fadeUp = { hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: "easeOut" as const } } };
 
 const IA_STEPS = [{ label: "Plan" }, { label: "Pago" }, { label: "Tu perfil" }, { label: "Chat" }];
 
@@ -621,10 +625,14 @@ ${careers.length > 0 ? `Tu carrera con mayor afinidad es **${careers[0].career}*
   // ─── PAYWALL ──────────────────────────────────────────────────────────────
   if (phase === "paywall") {
     return (
-      <div className="min-h-screen bg-[#F4F6F9] py-8 px-4">
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 via-gray-50 to-blue-50/20 py-8 px-4">
         <div className="max-w-lg mx-auto">
           <StepProgress steps={IA_STEPS} current={0} />
-          <div className="bg-gradient-to-br from-[#7C3AED] to-[#4F46E5] rounded-3xl p-7 text-white mb-5">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-gradient-to-br from-[#7C3AED] to-[#4F46E5] rounded-3xl p-7 text-white mb-5"
+          >
             <div className="flex items-center gap-3 mb-4">
               <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center">
                 <Brain size={28} className="text-white" />
@@ -643,7 +651,7 @@ ${careers.length > 0 ? `Tu carrera con mayor afinidad es **${careers[0].career}*
               <p className="text-purple-200 text-sm">Pago único · Acceso de por vida</p>
             </div>
 
-            <ul className="space-y-2.5 mb-6">
+            <motion.ul variants={stagger} initial="hidden" animate="visible" className="space-y-2.5 mb-6">
               {[
                 { icon: <Brain size={15} />, text: "Análisis psicológico profundo de tu perfil" },
                 { icon: <TrendingUp size={15} />, text: "Cruce con datos reales MTPE y SUNEDU 2025" },
@@ -654,12 +662,12 @@ ${careers.length > 0 ? `Tu carrera con mayor afinidad es **${careers[0].career}*
                 { icon: <User size={15} />, text: "Chat personalizado con especialistas humanos" },
                 { icon: <Users size={15} />, text: "Crea tus propios foros en la Comunidad" },
               ].map((b) => (
-                <li key={b.text} className="flex items-center gap-2.5 text-sm text-purple-100">
+                <motion.li key={b.text} variants={fadeUp} className="flex items-center gap-2.5 text-sm text-purple-100">
                   <div className="text-yellow-300 flex-shrink-0">{b.icon}</div>
                   {b.text}
-                </li>
+                </motion.li>
               ))}
-            </ul>
+            </motion.ul>
 
             {careers.length > 0 && (
               <div className="bg-white/10 rounded-xl p-3 mb-5">
@@ -691,7 +699,7 @@ ${careers.length > 0 ? `Tu carrera con mayor afinidad es **${careers[0].career}*
               {state.user?.isDemo ? "Crear cuenta para desbloquear" : "Desbloquear ElijePe IA"}
               <ChevronRight size={16} />
             </button>
-          </div>
+          </motion.div>
 
           <p className="text-center text-xs text-gray-400">
             Pago seguro mediante pasarela SSL cifrada. Sin suscripción ni cobros recurrentes.
@@ -704,7 +712,7 @@ ${careers.length > 0 ? `Tu carrera con mayor afinidad es **${careers[0].career}*
   // ─── PAYMENT ──────────────────────────────────────────────────────────────
   if (phase === "payment") {
     return (
-      <div className="min-h-screen bg-[#F4F6F9] py-8 px-4">
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 via-gray-50 to-blue-50/20 py-8 px-4">
         <div className="max-w-md mx-auto">
           <StepProgress steps={IA_STEPS} current={1} />
           <button onClick={() => setPhase("paywall")} className="flex items-center gap-1 text-gray-500 text-sm mb-5 hover:text-gray-700">
@@ -716,7 +724,11 @@ ${careers.length > 0 ? `Tu carrera con mayor afinidad es **${careers[0].career}*
             pedir pagar por esto.
           </GuideCallout>
 
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6"
+          >
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-lg font-bold text-gray-900">Datos de pago</h2>
               <div className="flex items-center gap-1.5">
@@ -807,7 +819,9 @@ ${careers.length > 0 ? `Tu carrera con mayor afinidad es **${careers[0].career}*
               </div>
             )}
 
-            <button
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={handlePay}
               disabled={paying || !cardNum || !cardName || !expiry || !cvv}
               className={`w-full py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all ${
@@ -827,8 +841,8 @@ ${careers.length > 0 ? `Tu carrera con mayor afinidad es **${careers[0].career}*
                   Pagar S/. 10.00
                 </>
               )}
-            </button>
-          </div>
+            </motion.button>
+          </motion.div>
         </div>
       </div>
     );
@@ -858,9 +872,11 @@ ${careers.length > 0 ? `Tu carrera con mayor afinidad es **${careers[0].career}*
               <span className="text-sm font-bold text-[#7C3AED]">{pct}%</span>
             </div>
             <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-[#7C3AED] rounded-full transition-all duration-500"
-                style={{ width: `${pct}%` }}
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${pct}%` }}
+                transition={{ duration: 0.5, ease: "easeOut" as const }}
+                className="h-full bg-[#7C3AED] rounded-full"
               />
             </div>
           </div>
@@ -930,7 +946,11 @@ ${careers.length > 0 ? `Tu carrera con mayor afinidad es **${careers[0].career}*
   return (
     <div className="flex flex-col h-[calc(100vh-64px)] bg-[#F4F6F9]">
       {/* Header */}
-      <div className="bg-white border-b border-gray-100 px-4 py-3 flex items-center gap-3 flex-shrink-0">
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white border-b border-gray-100 px-4 py-3 flex items-center gap-3 flex-shrink-0"
+      >
         <div className="w-9 h-9 bg-gradient-to-br from-[#7C3AED] to-[#4F46E5] rounded-xl flex items-center justify-center">
           <Brain size={18} className="text-white" />
         </div>
@@ -956,7 +976,7 @@ ${careers.length > 0 ? `Tu carrera con mayor afinidad es **${careers[0].career}*
             </>
           )}
         </div>
-      </div>
+      </motion.div>
 
       {/* Desktop layout wrapper */}
       <div className="flex flex-1 min-h-0">
@@ -1082,7 +1102,9 @@ ${careers.length > 0 ? `Tu carrera con mayor afinidad es **${careers[0].career}*
                 }
               }}
             />
-            <button
+            <motion.button
+              whileHover={{ scale: 1.08 }}
+              whileTap={{ scale: 0.92 }}
               onClick={() => sendMessage(input)}
               disabled={!input.trim() || isTyping}
               className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all flex-shrink-0 ${
@@ -1092,7 +1114,7 @@ ${careers.length > 0 ? `Tu carrera con mayor afinidad es **${careers[0].career}*
               }`}
             >
               <Send size={16} />
-            </button>
+            </motion.button>
           </div>
         </div>
       </div>

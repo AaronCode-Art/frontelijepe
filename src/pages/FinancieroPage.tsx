@@ -9,6 +9,10 @@ import {
 } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 import { universities } from "@/data/universities";
+import { motion } from "motion/react";
+
+const stagger = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.05 } } };
+const fadeUp = { hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: "easeOut" as const } } };
 
 const COLORS = ["#0059FF", "#7C3AED", "#16A34A", "#D97706", "#D91023"];
 
@@ -21,6 +25,7 @@ function KpiCard({ label, value, sub, icon: Icon, color }: {
 }) {
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-5 flex items-start gap-4 shadow-sm">
+      <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="flex items-start gap-4 w-full">
       <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ background: `${color}18` }}>
         <Icon size={20} style={{ color }} />
       </div>
@@ -29,6 +34,7 @@ function KpiCard({ label, value, sub, icon: Icon, color }: {
         <p className="text-xl font-bold text-gray-900 mt-0.5">{value}</p>
         {sub && <p className="text-xs text-gray-400 mt-0.5">{sub}</p>}
       </div>
+      </motion.div>
     </div>
   );
 }
@@ -120,7 +126,7 @@ export default function FinancieroPage() {
   // ─── Activation Gate ──────────────────────────────────────────────────────────
   if (!state.financieroEnabled) {
     return (
-      <div className="min-h-screen bg-[#F4F6F9] flex items-center justify-center p-6">
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 via-gray-50 to-blue-50/20 flex items-center justify-center p-6">
         <div className="bg-white rounded-2xl border border-gray-200 p-10 text-center max-w-md shadow-lg">
           <div className="w-16 h-16 bg-[#0059FF]/10 rounded-full flex items-center justify-center mx-auto mb-4">
             <BarChart3 size={32} className="text-[#0059FF]" />
@@ -143,7 +149,7 @@ export default function FinancieroPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F4F6F9]">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 via-gray-50 to-blue-50/20">
       <div className="max-w-7xl mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex items-start justify-between mb-6 flex-wrap gap-3">
@@ -212,7 +218,7 @@ export default function FinancieroPage() {
         {/* Charts grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
           {/* Chart 1 — Proyección 5 años */}
-          <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }} className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
             <h3 className="font-bold text-gray-900 text-sm mb-1">Proyección de costos a 5 años</h3>
             <p className="text-xs text-gray-400 mb-4">Costo anual estimado con inflación del 8%</p>
             <ResponsiveContainer width="100%" height={220}>
@@ -235,10 +241,10 @@ export default function FinancieroPage() {
                 ))}
               </LineChart>
             </ResponsiveContainer>
-          </div>
+          </motion.div>
 
           {/* Chart 2 — Pensiones */}
-          <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
             <h3 className="font-bold text-gray-900 text-sm mb-1">Comparación de pensiones</h3>
             <p className="text-xs text-gray-400 mb-4">Rango mínimo–máximo por universidad</p>
             <ResponsiveContainer width="100%" height={220}>
@@ -252,10 +258,10 @@ export default function FinancieroPage() {
                 <Bar dataKey="Pensión máx." fill="#0059FF" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
-          </div>
+          </motion.div>
 
           {/* Chart 3 — Empleabilidad vs Costo */}
-          <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
             <h3 className="font-bold text-gray-900 text-sm mb-1">Empleabilidad vs Índice de costo</h3>
             <p className="text-xs text-gray-400 mb-4">Comparación relativa (100 = máximo del grupo)</p>
             <ResponsiveContainer width="100%" height={220}>
@@ -269,10 +275,10 @@ export default function FinancieroPage() {
                 <Bar dataKey="Índice costo" fill="#D91023" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
-          </div>
+          </motion.div>
 
           {/* Chart 4 — Distribución */}
-          <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
             <h3 className="font-bold text-gray-900 text-sm mb-1">Distribución por tipo</h3>
             <p className="text-xs text-gray-400 mb-4">Pública vs Privada entre tus favoritas</p>
             <ResponsiveContainer width="100%" height={220}>
@@ -296,7 +302,7 @@ export default function FinancieroPage() {
                 <Legend iconSize={10} wrapperStyle={{ fontSize: 11 }} />
               </PieChart>
             </ResponsiveContainer>
-          </div>
+          </motion.div>
         </div>
 
         {/* Financial Calculator */}
@@ -376,7 +382,7 @@ export default function FinancieroPage() {
         </div>
 
         {/* CTA */}
-        <div className="bg-gradient-to-r from-[#0059FF] to-[#7C3AED] rounded-2xl p-6 text-white flex items-center justify-between flex-wrap gap-4">
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-gradient-to-r from-[#0059FF] to-[#7C3AED] rounded-2xl p-6 text-white flex items-center justify-between flex-wrap gap-4">
           <div>
             <h3 className="font-bold text-lg">Compara universidades lado a lado</h3>
             <p className="text-sm text-white/80 mt-1">Usa el comparador para analizar costos, pensiones y empleabilidad en detalle.</p>
@@ -388,7 +394,7 @@ export default function FinancieroPage() {
             Ver comparador
             <ArrowRight size={15} />
           </button>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

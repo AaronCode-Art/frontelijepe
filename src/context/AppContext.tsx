@@ -1,6 +1,50 @@
-import React, { createContext, useContext, useCallback, useEffect, useReducer, useState } from "react";
+import React, { createContext, useContext, useCallback, useEffect, useReducer } from "react";
+import { useNavigate, useLocation } from "react-router";
 import type { AppState, User, Page, ChatSession, AppNotification, CommunityChannel, EspecialistaSesion, Postulacion } from "../types";
 import { loadState, saveState } from "../services/storage";
+import { historialIA } from "../services/api";
+
+// ─── Route mapping ───────────────────────────────────────────────────────────
+const PAGE_TO_PATH: Record<Page, string> = {
+  auth: "/auth",
+  dashboard: "/",
+  home: "/",
+  explorar: "/explorar",
+  test: "/test",
+  simulador: "/simulador",
+  detalle: "/universidad",
+  comparador: "/comparador",
+  ia: "/ia",
+  comunidad: "/comunidad",
+  mapa: "/mapa",
+  favoritos: "/favoritos",
+  perfil: "/perfil",
+  notificaciones: "/notificaciones",
+  financiero: "/financiero",
+  "chat-history": "/historial-ia",
+  especialistas: "/especialistas",
+};
+
+const PATH_TO_PAGE: Record<string, Page> = {};
+Object.entries(PAGE_TO_PATH).forEach(([page, path]) => {
+  if (path !== "/") PATH_TO_PAGE[path] = page as Page;
+});
+PATH_TO_PAGE["/"] = "dashboard";
+
+export function pageToPath(page: Page, uniId?: number): string {
+  if (page === "detalle" && uniId !== undefined) return `/universidad/${uniId}`;
+  return PAGE_TO_PATH[page] ?? "/";
+}
+
+export function pathToPage(pathname: string): { page: Page; uniId?: number } {
+  const parts = pathname.split("/").filter(Boolean);
+  if (parts[0] === "universidad" && parts[1]) {
+    const id = parseInt(parts[1], 10);
+    return { page: "detalle", uniId: isNaN(id) ? undefined : id };
+  }
+  const path = "/" + (parts[0] ?? "");
+  return { page: PATH_TO_PAGE[path] ?? "dashboard" };
+}
 
 // ─── Initial notifications ────────────────────────────────────────────────────
 const defaultNotifications: AppNotification[] = [
@@ -51,6 +95,7 @@ type Action =
   | { type: "SAVE_TEST_RESULT"; result: AppState["testResults"][0] }
   | { type: "SET_SIMULADOR_LOADED"; value: boolean }
   | { type: "SAVE_CHAT_SESSION"; session: ChatSession }
+  | { type: "LOAD_CHAT_SESSIONS"; sessions: ChatSession[] }
   | { type: "TOGGLE_COMMUNITY_LIKE"; postId: string }
   | { type: "SET_FINANCIERO_ENABLED"; value: boolean }
   | { type: "UNLOCK_IA_PREMIUM" }
@@ -99,12 +144,13 @@ function reducer(state: AppState, action: Action): AppState {
       return { ...state, simuladorLoaded: action.value };
     case "SAVE_CHAT_SESSION":
       return { ...state, chatSessions: [action.session, ...state.chatSessions.filter((s) => s.id !== action.session.id)].slice(0, 20) };
+    case "LOAD_CHAT_SESSIONS":
+      return { ...state, chatSessions: action.sessions.slice(0, 20) };
     case "TOGGLE_COMMUNITY_LIKE":
       return { ...state, communityLikes: state.communityLikes.includes(action.postId) ? state.communityLikes.filter((id) => id !== action.postId) : [...state.communityLikes, action.postId] };
     case "SET_FINANCIERO_ENABLED":
       return { ...state, financieroEnabled: action.value };
     case "UNLOCK_IA_PREMIUM":
-      // El pago único de S/. 10 desbloquea: IA mejorada, chat con especialistas y creación de foros.
       return { ...state, user: state.user ? { ...state.user, iaPremium: true } : state.user };
     case "CREATE_FORO":
       return { ...state, customChannels: [...state.customChannels, action.channel] };
@@ -140,49 +186,79 @@ const AppContext = createContext<AppContextType>({} as AppContextType);
 
 // ─── Provider ─────────────────────────────────────────────────────────────────
 export function AppProvider({ children }: { children: React.ReactNode }) {
-  const [page, setPage] = useState<Page>("auth");
-  const [selectedUniId, setSelectedUniId] = useState<number | null>(null);
-  const [selectedChatSessionId, setSelectedChatSessionId] = useState<string | null>(null);
+  const routerNavigate = useNavigate();
+  const location = useLocation();
+  const [selectedChatSessionId, setSelectedChatSessionId] = React.useState<string | null>(null);
 
   const [state, dispatch] = useReducer(reducer, defaultState, (def) => {
     const saved = loadState();
     return saved ? { ...def, ...saved, notifications: def.notifications } : def;
   });
 
+  // Derive page from URL
+  const { page: currentPage, uniId: urlUniId } = pathToPage(location.pathname);
+
   // Auto-save state to localStorage whenever it changes
   useEffect(() => {
     saveState(state);
   }, [state]);
 
+  // Fetch chat history from backend when user logs in
+  useEffect(() => {
+    if (!state.user || state.user.isDemo || !state.user.id) return;
+    let cancelled = false;
+    historialIA(state.user.id)
+      .then((data) => {
+        if (cancelled || !data) return;
+        const sessions: ChatSession[] = data.map((s: any) => ({
+          id: s.id,
+          type: "ia" as const,
+          title: s.titulo || `Sesión IA`,
+          date: s.created_at,
+          messages: (s.mensajes || []).map((m: any) => ({
+            id: m.id,
+            role: m.role,
+            content: m.content,
+            time: new Date(m.created_at).toLocaleTimeString("es-PE", { hour: "2-digit", minute: "2-digit" }),
+          })),
+        }));
+        dispatch({ type: "LOAD_CHAT_SESSIONS", sessions });
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [state.user]);
+
   // Redirect to auth if not logged in
   useEffect(() => {
-    if (!state.user && page !== "auth") setPage("auth");
-  }, [state.user, page]);
+    if (!state.user && currentPage !== "auth") {
+      routerNavigate("/auth", { replace: true });
+    }
+  }, [state.user, currentPage, routerNavigate]);
 
   const navigate = useCallback((p: Page, uniId?: number) => {
-    if (uniId !== undefined) setSelectedUniId(uniId);
-    setPage(p);
+    const path = pageToPath(p, uniId);
+    routerNavigate(path);
     window.scrollTo({ top: 0, behavior: "smooth" });
-  }, []);
+  }, [routerNavigate]);
 
   const openChatSession = useCallback((sessionId: string) => {
     setSelectedChatSessionId(sessionId);
-    setPage("ia");
+    routerNavigate("/ia");
     window.scrollTo({ top: 0, behavior: "smooth" });
-  }, []);
+  }, [routerNavigate]);
 
   const login = useCallback((u: User) => {
     dispatch({ type: "LOGIN", payload: u });
-    setPage("dashboard");
-  }, []);
+    routerNavigate("/", { replace: true });
+  }, [routerNavigate]);
 
   const logout = useCallback(() => {
     dispatch({ type: "LOGOUT" });
-    setPage("auth");
-  }, []);
+    routerNavigate("/auth", { replace: true });
+  }, [routerNavigate]);
 
   return (
-    <AppContext.Provider value={{ state, page, selectedUniId, selectedChatSessionId, navigate, openChatSession, login, logout, dispatch }}>
+    <AppContext.Provider value={{ state, page: currentPage, selectedUniId: urlUniId ?? null, selectedChatSessionId, navigate, openChatSession, login, logout, dispatch }}>
       {children}
     </AppContext.Provider>
   );

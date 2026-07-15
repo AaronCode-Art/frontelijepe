@@ -1,3 +1,4 @@
+import { BrowserRouter, Routes, Route, Navigate } from "react-router";
 import { AppProvider, useApp } from "@/context/AppContext";
 import { AccessibilityProvider } from "@/context/AccessibilityContext";
 import AccessibilityWidget from "@/components/AccessibilityWidget";
@@ -49,7 +50,7 @@ function AppInner() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background" style={{ fontFamily: "Inter, sans-serif" }}>
-      {/* Login modal — floats over the app when the user is not authenticated */}
+      {/* Login modal */}
       {!state.user && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <AuthPage />
@@ -68,10 +69,14 @@ function AppInner() {
 
 export default function App() {
   return (
-    <AccessibilityProvider>
-      <AppProvider>
-        <AppInner />
-      </AppProvider>
-    </AccessibilityProvider>
+    <BrowserRouter>
+      <AccessibilityProvider>
+        <AppProvider>
+          <Routes>
+            <Route path="/*" element={<AppInner />} />
+          </Routes>
+        </AppProvider>
+      </AccessibilityProvider>
+    </BrowserRouter>
   );
 }

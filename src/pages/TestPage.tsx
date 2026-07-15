@@ -1,9 +1,10 @@
 import { useState } from "react";
+import { motion } from "motion/react";
 import { useApp } from "@/context/AppContext";
 import type { CareerResult } from "@/types";
 import { testQuestions, iaDeepQuestions, CLUSTERS, CAREER_MAP } from "@/data/testQuestions";
 import { universities } from "@/data/universities";
-import { guardarResultadoTest } from "@/services/api";
+import { guardarResultadoTest, predecirML, type PrediccionML } from "@/services/api";
 import {
   Rocket, ChevronLeft, ChevronRight, SkipForward, CheckCircle2,
   Trophy, Star, BookOpen, Brain, Users, DollarSign, GraduationCap,
@@ -73,6 +74,9 @@ const RANK_COLORS = [
   { bar: "#059669", label: "text-emerald-600", badge: "bg-emerald-50 text-emerald-700 border-emerald-200" },
 ];
 
+const stagger = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.05 } } };
+const fadeUp = { hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: "easeOut" as const } } };
+
 type Phase = "intro" | "test" | "results";
 
 export default function TestPage() {
@@ -82,6 +86,9 @@ export default function TestPage() {
   const [phase, setPhase] = useState<Phase>("intro");
   const [results, setResults] = useState<CareerResult[]>([]);
   const [saved, setSaved] = useState(false);
+  const [mlRanking, setMlRanking] = useState<PrediccionML[] | null>(null);
+  const [mlLoading, setMlLoading] = useState(false);
+  const [mlInfo, setMlInfo] = useState<{ tipo: string; muestras_entrenamiento: number; accuracy_test: number } | null>(null);
 
   const q = testQuestions[currentQuestion];
   const totalQuestions = testQuestions.length;
@@ -135,6 +142,17 @@ export default function TestPage() {
         console.error("No se pudo guardar el resultado del test en el backend:", err)
       );
     }
+
+    // Predicción con un modelo de Machine Learning real (Random Forest)
+    // entrenado en el backend, además del cálculo local por suma de pesos.
+    setMlLoading(true);
+    predecirML(ans)
+      .then((r) => {
+        setMlRanking(r.ranking);
+        setMlInfo(r.modelo);
+      })
+      .catch((err) => console.error("No se pudo obtener la predicción de Machine Learning:", err))
+      .finally(() => setMlLoading(false));
   }
 
   function saveResults() {
@@ -159,10 +177,14 @@ export default function TestPage() {
   // ─── INTRO PHASE ──────────────────────────────────────────────────────────
   if (phase === "intro") {
     return (
-      <div className="min-h-screen bg-[#F4F6F9] py-8 px-4">
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 via-gray-50 to-blue-50/20 py-8 px-4">
         <div className="max-w-2xl mx-auto">
           {/* Hero Card */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 mb-6 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 mb-6 text-center"
+          >
             <div className="w-20 h-20 bg-[#0059FF]/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <Rocket size={36} className="text-[#0059FF]" />
             </div>
@@ -174,16 +196,16 @@ export default function TestPage() {
             </p>
 
             {/* Blocks overview */}
-            <div className="grid grid-cols-2 gap-2 mb-6 text-left">
-              {ALL_BLOCKS.map((block, i) => (
-                <div key={block} className="flex items-center gap-2 p-2 rounded-lg bg-[#F4F6F9]">
+            <motion.div variants={stagger} initial="hidden" animate="visible" className="grid grid-cols-2 gap-2 mb-6 text-left">
+              {ALL_BLOCKS.map((block) => (
+                <motion.div key={block} variants={fadeUp} className="flex items-center gap-2 p-2 rounded-lg bg-[#F4F6F9]">
                   <div className="w-7 h-7 rounded-full bg-[#0059FF]/10 flex items-center justify-center text-[#0059FF] flex-shrink-0">
                     {BLOCK_ICONS[block]}
                   </div>
                   <span className="text-xs text-gray-700 font-medium leading-tight">{block}</span>
-                </div>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
 
             {answeredCount > 0 && (
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-4 flex items-center gap-2">
@@ -194,7 +216,9 @@ export default function TestPage() {
               </div>
             )}
 
-            <button
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => {
                 if (answeredCount > 0) {
                   const lastAnswered = Math.max(
@@ -208,7 +232,7 @@ export default function TestPage() {
             >
               <Rocket size={18} />
               {answeredCount > 0 ? "Continuar test" : "Comenzar test"}
-            </button>
+            </motion.button>
 
             {state.testResults.length > 0 && (
               <button
@@ -221,7 +245,7 @@ export default function TestPage() {
                 Ver resultados anteriores →
               </button>
             )}
-          </div>
+          </motion.div>
         </div>
       </div>
     );
@@ -234,7 +258,7 @@ export default function TestPage() {
     const isLast = currentQuestion === totalQuestions - 1;
 
     return (
-      <div className="min-h-screen bg-[#F4F6F9] py-6 px-4">
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 via-gray-50 to-blue-50/20 py-6 px-4">
         <div className="max-w-2xl mx-auto">
           {/* Progress Header */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-4">
@@ -278,7 +302,12 @@ export default function TestPage() {
           </div>
 
           {/* Question Card */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.97 }}
+            animate={{ opacity: 1, scale: 1 }}
+            key={currentQuestion}
+            className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-4"
+          >
             <div className="flex items-center gap-2 mb-4">
               <div className="w-8 h-8 rounded-full bg-[#0059FF]/10 flex items-center justify-center text-[#0059FF]">
                 {BLOCK_ICONS[q.block]}
@@ -295,8 +324,10 @@ export default function TestPage() {
             {q.type === "scale" && (
               <div className="flex gap-2">
                 {q.options.map((opt) => (
-                  <button
+                  <motion.button
                     key={opt.value}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => toggleOption(opt.value)}
                     className={`flex-1 py-4 rounded-xl font-bold text-lg transition-all duration-200 border-2 ${
                       selectedAnswers.includes(opt.value)
@@ -306,7 +337,7 @@ export default function TestPage() {
                     title={opt.label}
                   >
                     {opt.value}
-                  </button>
+                  </motion.button>
                 ))}
               </div>
             )}
@@ -339,7 +370,7 @@ export default function TestPage() {
                 })}
               </div>
             )}
-          </div>
+          </motion.div>
 
           {/* Navigation */}
           <div className="flex items-center gap-3">
@@ -389,23 +420,67 @@ export default function TestPage() {
 
   // ─── RESULTS PHASE ────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-[#F4F6F9] py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 via-gray-50 to-blue-50/20 py-8 px-4">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-6">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-center mb-6"
+        >
           <div className="w-16 h-16 bg-gradient-to-br from-[#0059FF] to-[#7C3AED] rounded-full flex items-center justify-center mx-auto mb-3">
             <Trophy size={28} className="text-white" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-1">¡Tu perfil vocacional está listo!</h1>
           <p className="text-gray-500 text-sm">Basado en tus {Object.keys(answers).length} respuestas</p>
+        </motion.div>
+
+        {/* Machine Learning prediction */}
+        <div className="bg-white rounded-2xl border border-gray-200 p-5 mb-6">
+          <div className="flex items-center gap-2 mb-3">
+            <Brain size={18} className="text-[#7C3AED]" />
+            <h2 className="font-bold text-gray-900 text-sm">Confirmado con Machine Learning</h2>
+          </div>
+          {mlLoading && (
+            <p className="text-sm text-gray-400">Consultando el modelo entrenado...</p>
+          )}
+          {!mlLoading && mlRanking && (
+            <>
+              <div className="space-y-2">
+                {mlRanking.slice(0, 3).map((r) => (
+                  <div key={r.cluster} className="flex items-center gap-3">
+                    <span className="text-xs font-semibold text-gray-700 w-40 truncate">{r.cluster_nombre}</span>
+                    <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${r.probabilidad}%` }}
+                        transition={{ duration: 0.8, ease: "easeOut" as const }}
+                        className="h-full bg-gradient-to-r from-[#7C3AED] to-[#0059FF] rounded-full"
+                      />
+                    </div>
+                    <span className="text-xs font-bold text-gray-600 w-12 text-right">{r.probabilidad}%</span>
+                  </div>
+                ))}
+              </div>
+              {mlInfo && (
+                <p className="text-[11px] text-gray-400 mt-3">
+                  Modelo: {mlInfo.tipo}, entrenado con {mlInfo.muestras_entrenamiento.toLocaleString("es-PE")} perfiles
+                  simulados (accuracy de prueba: {(mlInfo.accuracy_test * 100).toFixed(0)}%).
+                </p>
+              )}
+            </>
+          )}
+          {!mlLoading && !mlRanking && (
+            <p className="text-sm text-gray-400">No se pudo consultar el modelo de Machine Learning ahora mismo.</p>
+          )}
         </div>
 
         {/* Top 6 Career Cards */}
-        <div className="space-y-3 mb-6">
+        <motion.div variants={stagger} initial="hidden" animate="visible" className="space-y-3 mb-6">
           {results.map((r, i) => {
             const rank = RANK_COLORS[i] || RANK_COLORS[5];
             return (
-              <div key={r.career} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+              <motion.div key={r.career} variants={fadeUp} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
                 <div className="flex items-start justify-between mb-3">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
@@ -445,41 +520,47 @@ export default function TestPage() {
                     })}
                   </div>
                 )}
-              </div>
+              </motion.div>
             );
           })}
-        </div>
+        </motion.div>
 
         {/* Actions */}
         <div className="space-y-3 mb-6">
           {!saved ? (
-            <button
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={saveResults}
               className="w-full py-3 bg-[#0059FF] text-white rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors"
             >
               <CheckCircle2 size={18} />
               Guardar resultados
-            </button>
+            </motion.button>
           ) : (
             <div className="w-full py-3 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl font-semibold flex items-center justify-center gap-2">
               <CheckCircle2 size={18} />
               Resultados guardados
             </div>
           )}
-          <button
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             onClick={() => navigate("comparador")}
             className="w-full py-3 bg-white border border-gray-200 text-gray-700 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors"
           >
             <Building2 size={18} />
             Ver en el Comparador
-          </button>
-          <button
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             onClick={restartTest}
             className="w-full py-2.5 text-gray-400 text-sm flex items-center justify-center gap-1 hover:text-gray-600 transition-colors"
           >
             <RotateCcw size={14} />
             Reiniciar test
-          </button>
+          </motion.button>
         </div>
 
         {/* IA Upsell — cambia según si ya tiene el acceso premium activo */}

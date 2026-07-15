@@ -208,3 +208,22 @@ export function obtenerUltimoResultadoTest(usuario_id: string) {
     `/api/test/resultado/${usuario_id}`
   );
 }
+
+export interface PrediccionML {
+  cluster: string;
+  cluster_nombre: string;
+  probabilidad: number;
+  carreras: string[];
+}
+
+// Predicción real con Machine Learning (Random Forest entrenado en el
+// backend, ver back/ml/model.py) — no es la simple suma de pesos del
+// frontend, sino un modelo que aprendió el patrón a partir de datos.
+export function predecirML(respuestas: Record<number, string[]>) {
+  const respuestasStr: Record<string, string[]> = {};
+  for (const [k, v] of Object.entries(respuestas)) respuestasStr[k] = v;
+  return request<{ ranking: PrediccionML[]; modelo: { tipo: string; muestras_entrenamiento: number; accuracy_test: number } }>(
+    "/api/test/predecir-ml",
+    { method: "POST", body: JSON.stringify({ respuestas: respuestasStr }) }
+  );
+}

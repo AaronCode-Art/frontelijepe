@@ -31,6 +31,42 @@
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
   --radius: 0.625rem;
+
+  /* ── Paleta extendida ── */
+  --violet: #7C3AED;
+  --violet-light: #EDE9FE;
+  --cyan: #06B6D4;
+  --cyan-light: #ECFEFF;
+  --amber: #F59E0B;
+  --amber-light: #FFFBEB;
+  --emerald: #10B981;
+  --emerald-light: #ECFDF5;
+
+  /* ── Gradientes ── */
+  --gradient-primary: linear-gradient(135deg, #0059FF 0%, #3B82F6 100%);
+  --gradient-violet: linear-gradient(135deg, #7C3AED 0%, #A78BFA 100%);
+  --gradient-hero: linear-gradient(135deg, #0059FF 0%, #7C3AED 50%, #06B6D4 100%);
+  --gradient-warm: linear-gradient(135deg, #F59E0B 0%, #D91023 100%);
+  --gradient-cool: linear-gradient(135deg, #06B6D4 0%, #0059FF 100%);
+  --gradient-surface: linear-gradient(180deg, #F4F6F9 0%, #FFFFFF 100%);
+
+  /* ── Sombras suavizadas ── */
+  --shadow-xs: 0 1px 2px rgba(0, 89, 255, 0.04);
+  --shadow-sm: 0 2px 8px rgba(0, 89, 255, 0.06);
+  --shadow-md: 0 4px 16px rgba(0, 89, 255, 0.08);
+  --shadow-lg: 0 8px 32px rgba(0, 89, 255, 0.10);
+  --shadow-xl: 0 16px 48px rgba(0, 89, 255, 0.12);
+  --shadow-glow: 0 0 24px rgba(0, 89, 255, 0.15);
+  --shadow-glow-violet: 0 0 24px rgba(124, 58, 237, 0.15);
+
+  /* ── Transiciones ── */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --transition-fast: 150ms var(--ease-out-expo);
+  --transition-base: 250ms var(--ease-out-expo);
+  --transition-smooth: 400ms var(--ease-out-expo);
+  --transition-spring: 500ms var(--ease-spring);
+
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: #030213;
@@ -117,6 +153,14 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-violet: var(--violet);
+  --color-violet-light: var(--violet-light);
+  --color-cyan: var(--cyan);
+  --color-cyan-light: var(--cyan-light);
+  --color-amber: var(--amber);
+  --color-amber-light: var(--amber-light);
+  --color-emerald: var(--emerald);
+  --color-emerald-light: var(--emerald-light);
 }
 
 @layer base {

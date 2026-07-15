@@ -94,3 +94,161 @@ html.a11y-fuente-dislexia i {
 .skip-link:focus {
   left: 0;
 }
+
+/* ============================================================================
+   Keyframes y utilidades de animación
+   ============================================================================ */
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes slideInLeft {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes slideInUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes popIn {
+  0% { opacity: 0; transform: scale(0.5); }
+  70% { transform: scale(1.05); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0, 89, 255, 0.3); }
+  50% { box-shadow: 0 0 0 8px rgba(0, 89, 255, 0); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ── Utility animation classes ── */
+.animate-fade-in {
+  animation: fadeIn 0.4s var(--ease-out-expo) both;
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s var(--ease-out-expo) both;
+}
+
+.animate-fade-in-down {
+  animation: fadeInDown 0.5s var(--ease-out-expo) both;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.4s var(--ease-out-expo) both;
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft 0.4s var(--ease-out-expo) both;
+}
+
+.animate-slide-in-up {
+  animation: slideInUp 0.4s var(--ease-out-expo) both;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.3s var(--ease-out-expo) both;
+}
+
+.animate-pop-in {
+  animation: popIn 0.4s var(--ease-spring) both;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-spin-slow {
+  animation: spin-slow 8s linear infinite;
+}
+
+/* ── Stagger delays ── */
+.delay-75 { animation-delay: 75ms; }
+.delay-150 { animation-delay: 150ms; }
+.delay-225 { animation-delay: 225ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-375 { animation-delay: 375ms; }
+.delay-450 { animation-delay: 450ms; }
+
+/* ── Scrollbar personalizado ── */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 999px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ── Selección personalizada ── */
+::selection {
+  background: rgba(0, 89, 255, 0.15);
+  color: inherit;
+}
+
+/* ── Prefers reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

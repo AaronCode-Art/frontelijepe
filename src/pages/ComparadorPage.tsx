@@ -9,6 +9,7 @@ import {
 import {
   LineChart, Line, Tooltip, ResponsiveContainer,
 } from "recharts";
+import { motion } from "motion/react";
 
 type SectionId = "general" | "costos" | "calidad" | "roi";
 
@@ -139,7 +140,11 @@ export default function ComparadorPage() {
 
   if (compareUnis.length === 0) {
     return (
-      <div className="max-w-3xl mx-auto px-4 py-20 text-center">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="max-w-3xl mx-auto px-4 py-20 text-center"
+      >
         <div className="w-20 h-20 rounded-full bg-blue-50 flex items-center justify-center mx-auto mb-5">
           <Search size={32} className="text-blue-400" />
         </div>
@@ -153,7 +158,7 @@ export default function ComparadorPage() {
         >
           Ir a Explorar
         </button>
-      </div>
+      </motion.div>
     );
   }
 
@@ -184,7 +189,11 @@ export default function ComparadorPage() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex items-center justify-between mb-6 flex-wrap gap-4"
+      >
         <div className="flex items-center gap-3">
           <h1 className="text-2xl font-bold text-gray-900">Comparador de Universidades</h1>
           <span className="px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-700 text-sm font-semibold">
@@ -195,12 +204,13 @@ export default function ComparadorPage() {
         {/* Add university */}
         {compareUnis.length < 5 && (
           <div className="relative">
-            <button
+            <motion.button
+              whileHover={{ scale: 1.03 }}
               onClick={() => setShowDropdown((v) => !v)}
               className="flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-dashed border-blue-300 text-blue-600 text-sm font-medium hover:bg-blue-50 transition-colors"
             >
               <Plus size={16} /> Añadir universidad
-            </button>
+            </motion.button>
             {showDropdown && (
               <div className="absolute right-0 top-full mt-2 w-72 bg-white rounded-xl border border-gray-200 shadow-xl z-30">
                 <div className="p-2 border-b border-gray-100">
@@ -246,7 +256,7 @@ export default function ComparadorPage() {
             )}
           </div>
         )}
-      </div>
+      </motion.div>
 
       {/* Main table */}
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
@@ -464,24 +474,30 @@ export default function ComparadorPage() {
 
       {/* Bottom actions */}
       <div className="flex items-center gap-3 mt-6 flex-wrap">
-        <button
+        <motion.button
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
           onClick={() => showToast("Comparación guardada correctamente.")}
           className="flex items-center gap-2 px-5 py-3 rounded-xl bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors"
         >
           <Bookmark size={15} /> Guardar comparación
-        </button>
-        <button
+        </motion.button>
+        <motion.button
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
           onClick={() => showToast("Exportando comparación a PDF...")}
           className="flex items-center gap-2 px-5 py-3 rounded-xl border border-gray-200 text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors"
         >
           <Download size={15} /> Exportar PDF
-        </button>
-        <button
+        </motion.button>
+        <motion.button
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
           onClick={() => navigate("ia")}
           className="flex items-center gap-2 px-5 py-3 rounded-xl border border-purple-200 text-purple-700 text-sm font-medium hover:bg-purple-50 transition-colors"
         >
           <Sparkles size={15} /> Ver IA recomendación
-        </button>
+        </motion.button>
       </div>
 
       {toast && <Toast msg={toast} onClose={() => setToast(null)} />}

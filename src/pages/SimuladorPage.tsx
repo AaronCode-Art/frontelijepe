@@ -10,6 +10,10 @@ import {
   ChevronDown, ChevronUp, AlertCircle, XCircle, ArrowUpDown,
   Users, GraduationCap, UserCheck, ExternalLink, RefreshCw, Lock, Clock,
 } from "lucide-react";
+import { motion } from "motion/react";
+
+const stagger = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.05 } } };
+const fadeUp = { hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: "easeOut" as const } } };
 
 // Universidades con malla curricular de ejemplo ya cargada (ver schema_update.sql).
 // Para el resto, el backend devolverá un error claro pidiendo cargar la malla real.
@@ -188,7 +192,7 @@ export default function SimuladorPage() {
   // ─── PANTALLA DE CARGA ────────────────────────────────────────────────────
   if (!resultado) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-12">
+      <div className="max-w-2xl mx-auto px-4 py-12 bg-gradient-to-b from-gray-50 via-gray-50 to-blue-50/20 min-h-screen">
         <h1 className="text-2xl font-bold text-gray-900 mb-1">Simulador de Convalidación</h1>
         <p className="text-gray-500 mb-6">
           Sube el PDF de tu récord académico real y descubre, curso por curso, qué convalida en la
@@ -250,7 +254,9 @@ export default function SimuladorPage() {
         </p>
 
         {/* Drag & Drop Zone */}
-        <div
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
           role="button"
           tabIndex={0}
           aria-label="Subir récord académico en PDF. Presiona Enter para elegir el archivo, o arrástralo aquí."
@@ -314,7 +320,7 @@ export default function SimuladorPage() {
           </div>
 
           <p className="text-xs text-gray-400">Formato aceptado: PDF con texto seleccionable (no fotos escaneadas) — máx. 10MB</p>
-        </div>
+        </motion.div>
 
         {error && (
           <div className="mt-4 flex items-start gap-2 bg-red-50 border border-red-100 text-red-600 text-sm rounded-xl px-4 py-3">
@@ -322,7 +328,9 @@ export default function SimuladorPage() {
           </div>
         )}
 
-        <button
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
           onClick={handleAnalizar}
           disabled={!file || loading}
           className="mt-5 w-full py-3 rounded-xl bg-[#0059FF] text-white font-semibold flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors disabled:opacity-40"
@@ -337,14 +345,14 @@ export default function SimuladorPage() {
               <UserCheck size={16} /> Analizar convalidación
             </>
           )}
-        </button>
+        </motion.button>
       </div>
     );
   }
 
   // ─── PANTALLA DE RESULTADOS ────────────────────────────────────────────────
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="max-w-7xl mx-auto px-4 py-8 bg-gradient-to-b from-gray-50 via-gray-50 to-blue-50/20 min-h-screen">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Simulador de Convalidación</h1>
         <p className="text-sm text-gray-500 mt-0.5 mb-4">Análisis basado en tu récord académico real (PDF)</p>
@@ -385,7 +393,7 @@ export default function SimuladorPage() {
             </div>
 
             <div className="flex flex-col items-center mb-4">
-              <svg width="110" height="110" viewBox="0 0 110 110">
+              <motion.svg initial={{ opacity: 0 }} animate={{ opacity: 1 }} width="110" height="110" viewBox="0 0 110 110">
                 <circle cx="55" cy="55" r={r} fill="none" stroke="#E5E7EB" strokeWidth="10" />
                 <circle
                   cx="55" cy="55" r={r} fill="none"
@@ -398,7 +406,7 @@ export default function SimuladorPage() {
                 />
                 <text x="55" y="51" textAnchor="middle" fontSize="18" fontWeight="700" fill="#111827">{pct}%</text>
                 <text x="55" y="67" textAnchor="middle" fontSize="9" fill="#6B7280">convalidado</text>
-              </svg>
+              </motion.svg>
               <p className="text-sm text-gray-600 font-medium">{resultado.total_convalidados} de {resultado.total_cursos_detectados} cursos</p>
             </div>
 
@@ -542,7 +550,7 @@ export default function SimuladorPage() {
       </div>
 
       {/* KPI Row */}
-      <div className="grid grid-cols-3 gap-4">
+      <motion.div variants={stagger} initial="hidden" animate="visible" className="grid grid-cols-3 gap-4">
         {[
           {
             value: String(resultado.total_creditos_convalidados),
@@ -566,7 +574,8 @@ export default function SimuladorPage() {
             onClick: () => navigate("explorar"),
           },
         ].map(({ value, label, sub, color, onClick }) => (
-          <button
+          <motion.button
+            variants={fadeUp}
             key={label}
             onClick={onClick}
             className="bg-white rounded-2xl border border-gray-200 p-5 text-left hover:shadow-md transition-shadow group cursor-pointer"
@@ -576,9 +585,9 @@ export default function SimuladorPage() {
             </p>
             <p className="text-sm font-semibold text-gray-800">{label}</p>
             <p className="text-xs text-gray-400 mt-0.5">{sub}</p>
-          </button>
+          </motion.button>
         ))}
-      </div>
+      </motion.div>
 
       {toast && <Toast msg={toast} onClose={() => setToast(null)} />}
     </div>

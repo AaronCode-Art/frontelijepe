@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import {
   Heart, BarChart2, Pin, Star, Share2, Eye, X,
   MapPin, Users, GraduationCap, DollarSign, Tag, Plus, Check,
@@ -90,9 +91,11 @@ export default function UniCard({ uni, view = "grid" }: UniCardProps) {
     return (
       <>
         {toast && <Toast msg={toast} onClose={() => setToast(null)} />}
-        <div
+        <motion.div
+          whileHover={{ scale: 1.01, y: -2 }}
+          whileTap={{ scale: 0.99 }}
           onClick={handleNavigate}
-          className="group flex gap-4 bg-white border border-gray-100 rounded-2xl p-4 hover:shadow-md transition-all cursor-pointer"
+          className="group flex gap-4 bg-white border border-gray-100/60 rounded-2xl p-4 hover:shadow-lg hover:shadow-blue-100/30 hover:border-blue-100/40 transition-all duration-300 cursor-pointer"
         >
           <div className="relative w-24 h-20 shrink-0 rounded-xl overflow-hidden">
             <img src={imgUrl} alt={uni.name} className="w-full h-full object-cover" />
@@ -141,7 +144,7 @@ export default function UniCard({ uni, view = "grid" }: UniCardProps) {
               </Tooltip>
             </div>
           </div>
-        </div>
+        </motion.div>
       </>
     );
   }
@@ -151,15 +154,23 @@ export default function UniCard({ uni, view = "grid" }: UniCardProps) {
       {toast && <Toast msg={toast} onClose={() => setToast(null)} />}
 
       {/* Quick view modal */}
-      {quickView && (
-        <div
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-          onClick={() => setQuickView(false)}
-        >
-          <div
-            className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
+      <AnimatePresence>
+        {quickView && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setQuickView(false)}
           >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ type: "spring", stiffness: 350, damping: 25 }}
+              className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
             <div className="relative h-40">
               <img src={imgUrl} alt={uni.name} className="w-full h-full object-cover" />
               <button
@@ -201,12 +212,18 @@ export default function UniCard({ uni, view = "grid" }: UniCardProps) {
                 Ver perfil completo
               </button>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
+      </AnimatePresence>
 
       {/* Card */}
-      <div className="group bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        whileHover={{ y: -3, boxShadow: "0 12px 32px rgba(0, 89, 255, 0.08)" }}
+        className="group bg-white border border-gray-100/60 rounded-2xl overflow-hidden transition-colors duration-300"
+      >
         {/* Image */}
         <div className="relative h-44 overflow-hidden cursor-pointer" onClick={handleNavigate}>
           <img
@@ -252,16 +269,17 @@ export default function UniCard({ uni, view = "grid" }: UniCardProps) {
           {/* Star rating */}
           <div className="flex items-center gap-0.5 mb-3">
             {[1, 2, 3, 4, 5].map((star) => (
-              <button
+              <motion.button
                 key={star}
+                whileHover={{ scale: 1.2 }}
+                whileTap={{ scale: 0.8 }}
                 onClick={(e) => setRating(e, star)}
-                className="transition-transform hover:scale-110"
               >
                 <Star
                   size={14}
                   className={star <= userRating ? "fill-yellow-400 text-yellow-400" : "text-gray-200"}
                 />
-              </button>
+              </motion.button>
             ))}
             <span className="text-xs text-gray-400 ml-1">{uni.rating.toFixed(1)}</span>
           </div>
@@ -328,63 +346,75 @@ export default function UniCard({ uni, view = "grid" }: UniCardProps) {
           </div>
 
           {/* Action strip */}
-          <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+          <div className="flex items-center justify-between pt-3 border-t border-gray-100/60">
             <div className="flex items-center gap-1">
               <Tooltip label={isFav ? "Quitar de favoritos" : "Guardar en favoritos"}>
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.85 }}
                   onClick={toggleFav}
                   className={`p-2 rounded-lg transition-all ${isFav ? "bg-red-50 text-red-500" : "hover:bg-red-50 text-gray-400 hover:text-red-500"}`}
                 >
                   <Heart size={15} className={isFav ? "fill-red-500" : ""} />
-                </button>
+                </motion.button>
               </Tooltip>
 
               <Tooltip label={isCompare ? "Quitar del comparador" : "Agregar al comparador"}>
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.85 }}
                   onClick={toggleCompare}
                   className={`p-2 rounded-lg transition-all ${isCompare ? "bg-purple-50 text-purple-600" : "hover:bg-purple-50 text-gray-400 hover:text-purple-600"}`}
                 >
                   <BarChart2 size={15} />
-                </button>
+                </motion.button>
               </Tooltip>
 
               <Tooltip label={isPinned ? "Desfijar" : "Fijar arriba"}>
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.85 }}
                   onClick={togglePin}
                   className={`p-2 rounded-lg transition-all ${isPinned ? "bg-yellow-50 text-yellow-500" : "hover:bg-yellow-50 text-gray-400 hover:text-yellow-500"}`}
                 >
                   <Pin size={15} />
-                </button>
+                </motion.button>
               </Tooltip>
 
               <Tooltip label="Compartir enlace">
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.85 }}
                   onClick={handleShare}
                   className="p-2 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-all"
                 >
                   <Share2 size={15} />
-                </button>
+                </motion.button>
               </Tooltip>
 
               <Tooltip label="Vista rápida">
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.85 }}
                   onClick={(e) => { e.stopPropagation(); setQuickView(true); }}
                   className="p-2 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-all"
                 >
                   <Eye size={15} />
-                </button>
+                </motion.button>
               </Tooltip>
             </div>
 
-            <button
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
               onClick={handleNavigate}
               className="text-xs font-semibold text-blue-600 hover:text-blue-800 px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-colors flex items-center gap-1"
             >
               Ver más <Plus size={12} />
-            </button>
+            </motion.button>
           </div>
         </div>
-      </div>
+      </motion.div>
     </>
   );
 }
